@@ -102,10 +102,18 @@ const update = async (req, res) => {
   );
 
   if (name) {
+    if (name.length < 3) {
+      return res.status(400).json({ errors: ["O nome deve ter mais de 3 caracteres."] });
+    } 
     user.name = name;
   }
 
   if (password) {
+    if (password.length < 6) {
+      return res.status(400).json({ errors: ["A senha deve ter mais de 6 caracteres."] });
+    } 
+    
+    
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
     user.password = passwordHash;
@@ -116,6 +124,9 @@ const update = async (req, res) => {
   }
 
   if (bio) {
+    if (bio.length < 5) {
+      return res.status(400).json({ errors: ["A biografia deve ter mais de 5 caracteres."] });
+    } 
     user.bio = bio;
   }
 
