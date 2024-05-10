@@ -34,6 +34,11 @@ const photoInsertValidation = () => {
       .isEmpty()
       .withMessage("O campo status é obrigatório!"),
 
+      body("date")
+      .not()
+      .isEmpty()
+      .withMessage("A data é obrigatória!"),
+
 
     body("image").custom((value, { req }) => {
       if (!req.file) {
@@ -74,6 +79,11 @@ const photoUpdateValidation = () => {
       .optional()
       .isString()
       .withMessage("O status é obrigatório!"),
+
+      body("date")
+      .optional()
+      .isString()
+      .withMessage("A data é obrigatória!"),
 
       
   ]

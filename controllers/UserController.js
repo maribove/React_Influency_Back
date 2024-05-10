@@ -111,7 +111,13 @@ const update = async (req, res) => {
   if (password) {
     if (password.length < 6) {
       return res.status(400).json({ errors: ["A senha deve ter mais de 6 caracteres."] });
-    } 
+    } if (!/[A-Z]/.test(password)) {
+      return res.status(400).json({ errors: ["A senha deve conter pelo menos uma letra maiúscula."] });
+    } if (!/\d/.test(password)) {
+      return res.status(400).json({ errors: ["A senha deve conter pelo menos um número."] });
+    } if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
+      return res.status(400).json({ errors: ["A senha deve conter pelo menos um caractere especial."] });
+    }
     
     
     const salt = await bcrypt.genSalt();

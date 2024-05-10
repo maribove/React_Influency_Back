@@ -6,12 +6,12 @@ const photoSchema = new Schema(
     image: String,
     title: String,
     desc: String,
+    date: String,
     situacao: String,
     local: String,
-    // likes: Array,
-    // comments: Array,
     userId: mongoose.ObjectId,
     userName: String,
+   
   },
   {
     timestamps: true,
