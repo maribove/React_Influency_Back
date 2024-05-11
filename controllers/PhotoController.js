@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const insertPhoto = async (req, res) => {
   const { title } = req.body;
   const { local } = req.body;
+  const { date } = req.body;
   const { desc } = req.body;
   const { situacao } = req.body;
   const image = req.file.filename;
@@ -22,6 +23,7 @@ const insertPhoto = async (req, res) => {
   const newPhoto = await Photo.create({
     image,
     local,
+    date,
     desc,
     situacao,
     title,
@@ -110,6 +112,7 @@ const updatePhoto = async (req, res) =>{
   const {id} = req.params
   const {title} = req.body
   const {desc} = req.body 
+  const {date} = req.body 
   const {local} = req.body
   const {situacao} = req.body
 
@@ -135,6 +138,9 @@ const updatePhoto = async (req, res) =>{
   }
   if(local){
     photo.local= local
+  }
+  if(date){
+    photo.date= date
   }
   if(desc){
     photo.desc= desc
