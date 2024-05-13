@@ -5,8 +5,10 @@ const mongoose = require("mongoose");
 // Inserir, com um usuário relacionado a ele
 const insertPost = async (req, res) => {
   const { publicacao } = req.body;
+  const  image  = req.file.filename;
 
   console.log(req.body);
+
 
   const reqUser = req.user;
 
@@ -21,6 +23,7 @@ const insertPost = async (req, res) => {
   try {
     const newPost = await Post.create({
       publicacao,
+      image,
       userId: user._id,
       userName: user.name,
     });
@@ -35,6 +38,8 @@ const insertPost = async (req, res) => {
   } catch (error) {
     res.status(500).json({ errors: ["Erro ao criar publicação."] });
   }
+
+  console.log(req.user)
 };
 
 

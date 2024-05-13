@@ -9,7 +9,7 @@ const photoSchema = new Schema(
     date: String,
     situacao: String,
     local: String,
-    userId: mongoose.ObjectId,
+    userId: mongoose.ObjectId, 
     userName: String,
    
   },

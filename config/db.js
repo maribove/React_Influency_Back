@@ -18,4 +18,4 @@ const conn = async () => {
 
 conn()
 
-module.exports = conn 
+module.exports = conn
