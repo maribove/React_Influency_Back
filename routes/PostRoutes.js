@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 
 // CONTROLLER
-const { insertPost, deletePost, getAllPosts, getUserPosts, getPostById, updatePost } = require("../controllers/PostController");
+const { insertPost, deletePost, getAllPosts, getUserPosts, getPostById, updatePost, LikePost, commentPost } = require("../controllers/PostController");
 
 // MIDDLEWARES
-const { postInsertValidation, postUpdateValidation } = require("../middlewares/postValidation")
+const { postInsertValidation, postUpdateValidation, commentValidation } = require("../middlewares/postValidation")
 const authGuard = require("../middlewares/authGuard");
 const validate = require("../middlewares/handleValidations");
 const { imageUpload } = require("../middlewares/imageUpload");
@@ -25,5 +25,9 @@ router.get("/", authGuard, getAllPosts);
 router.get("/user/:id", authGuard, getUserPosts);
 router.get("/:id", authGuard, getPostById);
 router.put("/:id", authGuard, postUpdateValidation(), validate, updatePost);
+router.put("/like/:id", authGuard, LikePost);
+router.put("/comment/:id", authGuard, commentValidation(), validate, commentPost)
 
 module.exports = router;
+
+

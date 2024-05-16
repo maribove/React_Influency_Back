@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 // Inserir, com um usuário relacionado a ele
 const insertPost = async (req, res) => {
   const { publicacao } = req.body;
-  const  image  = req.file.filename;
+  const image = req.file.filename; 
 
   console.log(req.body);
 
@@ -71,13 +71,10 @@ const deletePost = async (req, res) => {
 
 // Obter todas as publicações
 const getAllPosts = async (req, res) => {
-  try {
-    const posts = await Post.find({}).sort([["createdAt", -1]]).exec();
-    res.status(200).json(posts);
-  } catch (error) {
-    res.status(500).json({ errors: ["Erro ao buscar publicações."] });
-  }
-};
+  const posts = await Post.find({}).sort([["createdAt", -1]]).exec()
+
+  return res.status(200).json(posts)
+}
 
 
 // Obter publicações do usuário
@@ -153,6 +150,65 @@ const updatePost = async (req, res) => {
   }
 };
 
+// like no post
+const LikePost = async (req, res) => {
+  const { id } = req.params
+
+  const reqUser = req.user
+
+  const post = await Post.findById(id)
+  if (!post) {
+     res.status(404).json({ errors: ["Publicação não encontrada!"] });
+     return;
+  }
+
+  // checar se já curtiu
+  if (post.likes.includes(reqUser._id)) {
+    res.status(422).json({ errors: ["Post já foi curtido!"] })
+    return;
+  }
+
+  // colocar id do usuário no array de likes
+  post.likes.push(reqUser._id)
+  post.save()
+
+  res.status(200).json({ postId: id, userid: reqUser._id, message: "Post curtido!" })
+}
+
+// comentar em post
+const commentPost = async (req, res) => {
+  const { id } = req.params
+  const { comment } = req.body
+
+  const reqUser = req.user
+
+  const user = await User.findById(reqUser._id)
+  const post = await Post.findById(id)
+
+  if (!post) {
+    res.status(404).json({ errors: ["Publicação não encontrada!"] });
+    return;
+  }
+
+  // colocar comentario no array
+  const userComment = {
+    comment, 
+    userName: user.name,
+    userImage: user.profileImage,
+    userId: user._id,
+  }
+
+  post.comments.push(userComment)
+
+  await post.save()
+
+  res.status(200).json({
+    comment: userComment, 
+    message: "Comentário adicionado!",
+  })
+
+
+}
 
 module.exports = {
   insertPost,
@@ -161,4 +217,6 @@ module.exports = {
   getUserPosts,
   getPostById,
   updatePost,
+  LikePost,
+  commentPost, 
 };

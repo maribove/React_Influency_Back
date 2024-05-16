@@ -33,9 +33,16 @@ const postUpdateValidation = () => {
       .isLength({ min: 3 })
       .withMessage("A publicação precisa ter no mínimo 3 caracteres."),
   ];
-};
+}; 
+
+const commentValidation = () =>{
+  return [
+    body("comment").isString().withMessage("O comentário é obrigatório")
+  ]
+}
 
 module.exports = {
   postInsertValidation,
   postUpdateValidation,
+  commentValidation,
 };

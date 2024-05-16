@@ -12,10 +12,9 @@ const generateToken = (id) => {
     expiresIn: "7d",
   });
 };
-
 // Register user and sign in
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, type } = req.body;
 
   // check if user exists
   const user = await User.findOne({ email });
@@ -24,6 +23,7 @@ const register = async (req, res) => {
     res.status(422).json({ errors: ["E-mail já está sendo utilizado. Por favor, utilize outro e-mail!"] });
     return;
   }
+  
 
   // Generate password hash
   const salt = await bcrypt.genSalt();
@@ -33,6 +33,7 @@ const register = async (req, res) => {
   const newUser = await User.create({
     name,
     email,
+    type,
     password: passwordHash,
   });
 
@@ -162,6 +163,17 @@ const getUserById = async (req, res) => {
   }
 };
 
+const SearchUser = async (req, res) => {
+  const { q } = req.query;
+
+  // Garante que a busca comece com a sequência fornecida
+  const users = await User.find({ name: new RegExp(`^${q}`, "i") }).exec();
+  // const users = await User.find({ name: new RegExp(q, "i") }).exec(); pesquisa por letra
+
+  res.status(200).json(users);
+};
+
+
 
 module.exports = {
   register,
@@ -169,4 +181,5 @@ module.exports = {
   login,
   update,
   getUserById,
+  SearchUser,
 };

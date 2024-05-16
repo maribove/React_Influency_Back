@@ -155,8 +155,15 @@ const updatePhoto = async (req, res) =>{
 
 }
 
+const SearchPhoto = async (req, res) => {
+  const { q } = req.query;
 
+  
+  const photos = await Photo.find({ title: new RegExp(`^${q}`, "i") }).exec();
+  // const photos = await Photo.find({ name: new RegExp(q, "i") }).exec(); pesquisa por letra
 
+  res.status(200).json(photos);
+};
 
 module.exports = {
   insertPhoto,
@@ -165,5 +172,6 @@ module.exports = {
   getUserPhotos,
   getPhotoById,
   updatePhoto,
+  SearchPhoto,
 
 };
