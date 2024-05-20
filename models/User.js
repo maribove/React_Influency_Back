@@ -9,6 +9,7 @@ const userSchema = new Schema(
     type: String,
     profileImage: String,
     bio: String,
+    interests: Array,  
   },
   {
     timestamps: true,

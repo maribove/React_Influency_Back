@@ -35,6 +35,18 @@ const userCreateValidation = () => {
         }
         return true;
       }),
+
+      body("interests")
+      .isArray({ min: 1 })
+      .withMessage("Selecione pelo menos um interesse!")
+      .bail()
+      .custom((interests) => {
+        if (interests.length === 0) {
+          throw new Error("Selecione pelo menos um interesse!");
+        }
+        return true;
+      }),
+
   ];
 };
 

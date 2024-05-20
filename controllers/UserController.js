@@ -14,7 +14,7 @@ const generateToken = (id) => {
 };
 // Register user and sign in
 const register = async (req, res) => {
-  const { name, email, password, type } = req.body;
+  const { name, email, password, type, interests } = req.body;
 
   // check if user exists
   const user = await User.findOne({ email });
@@ -34,6 +34,7 @@ const register = async (req, res) => {
     name,
     email,
     type,
+    interests,
     password: passwordHash,
   });
 
@@ -87,60 +88,72 @@ const login = async (req, res) => {
 };
 
 // Update user
+// Update user
 const update = async (req, res) => {
-  const { name, password, bio } = req.body;
+  const { name, password, bio, interests } = req.body;
 
   let profileImage = null;
 
   if (req.file) {
-    profileImage = req.file.filename;
+      profileImage = req.file.filename;
   }
 
   const reqUser = req.user;
 
   const user = await User.findById(new mongoose.Types.ObjectId(reqUser._id)).select(
-    "-password"
+      "-password"
   );
 
+  if (!user) {
+      return res.status(404).json({ errors: ["Usuário não encontrado!"] });
+  }
+
   if (name) {
-    if (name.length < 3) {
-      return res.status(400).json({ errors: ["O nome deve ter mais de 3 caracteres."] });
-    } 
-    user.name = name;
+      if (name.length < 3) {
+          return res.status(400).json({ errors: ["O nome deve ter mais de 3 caracteres."] });
+      }
+      user.name = name;
   }
 
   if (password) {
-    if (password.length < 6) {
-      return res.status(400).json({ errors: ["A senha deve ter mais de 6 caracteres."] });
-    } if (!/[A-Z]/.test(password)) {
-      return res.status(400).json({ errors: ["A senha deve conter pelo menos uma letra maiúscula."] });
-    } if (!/\d/.test(password)) {
-      return res.status(400).json({ errors: ["A senha deve conter pelo menos um número."] });
-    } if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
-      return res.status(400).json({ errors: ["A senha deve conter pelo menos um caractere especial."] });
-    }
-    
-    
-    const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(password, salt);
-    user.password = passwordHash;
+      if (password.length < 6) {
+          return res.status(400).json({ errors: ["A senha deve ter mais de 6 caracteres."] });
+      }
+      if (!/[A-Z]/.test(password)) {
+          return res.status(400).json({ errors: ["A senha deve conter pelo menos uma letra maiúscula."] });
+      }
+      if (!/\d/.test(password)) {
+          return res.status(400).json({ errors: ["A senha deve conter pelo menos um número."] });
+      }
+      if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
+          return res.status(400).json({ errors: ["A senha deve conter pelo menos um caractere especial."] });
+      }
+
+      const salt = await bcrypt.genSalt();
+      const passwordHash = await bcrypt.hash(password, salt);
+      user.password = passwordHash;
+  }
+
+  if (interests) {
+      user.interests = interests;
   }
 
   if (profileImage) {
-    user.profileImage = profileImage;
+      user.profileImage = profileImage;
   }
 
   if (bio) {
-    if (bio.length < 5) {
-      return res.status(400).json({ errors: ["A biografia deve ter mais de 5 caracteres."] });
-    } 
-    user.bio = bio;
+      if (bio.length < 5) {
+          return res.status(400).json({ errors: ["A biografia deve ter mais de 5 caracteres."] });
+      }
+      user.bio = bio;
   }
 
   await user.save();
 
   res.status(200).json(user);
 };
+
 
 const getUserById = async (req, res) => {
   const { id } = req.params;
@@ -167,8 +180,15 @@ const SearchUser = async (req, res) => {
   const { q } = req.query;
 
   // Garante que a busca comece com a sequência fornecida
-  const users = await User.find({ name: new RegExp(`^${q}`, "i") }).exec();
-  // const users = await User.find({ name: new RegExp(q, "i") }).exec(); pesquisa por letra
+  const users = await User.find({
+    $or: [
+      { name: new RegExp(q, "i") },
+      { interests: new RegExp(q, "i") } 
+    ]
+  }).exec();
+  
+  // pesquisar por letra
+  //  const users = await User.find({ name: new RegExp(q, "i") }).exec(); 
 
   res.status(200).json(users);
 };

@@ -9,6 +9,7 @@ const insertPhoto = async (req, res) => {
   const { date } = req.body;
   const { desc } = req.body;
   const { situacao } = req.body;
+  const { tags } = req.body;
   const image = req.file.filename;
 
   console.log(req.body);
@@ -27,6 +28,7 @@ const insertPhoto = async (req, res) => {
     desc,
     situacao,
     title,
+    tags,
     userId: user._id,
     userName: user.name,
   });
@@ -158,9 +160,19 @@ const updatePhoto = async (req, res) =>{
 const SearchPhoto = async (req, res) => {
   const { q } = req.query;
 
+  // pesquisar por letra inicial
+  const photos = await Photo.find({
+    $or: [
+      { title: new RegExp(q, "i") },
+      { local: new RegExp(q, "i") },
+      { userName: new RegExp(q, "i") },
+      { tags: new RegExp(q, "i") }
+    ]
+  }).exec();
   
-  const photos = await Photo.find({ title: new RegExp(`^${q}`, "i") }).exec();
-  // const photos = await Photo.find({ name: new RegExp(q, "i") }).exec(); pesquisa por letra
+  // pesquisar por letra
+  //  const photos = await Photo.find({ title: new RegExp(q, "i") }).exec(); 
+
 
   res.status(200).json(photos);
 };

@@ -39,16 +39,26 @@ const photoInsertValidation = () => {
       .isEmpty()
       .withMessage("A data é obrigatória!"),
 
+    
 
     body("image").custom((value, { req }) => {
       if (!req.file) {
         throw new Error("A imagem é obrigatória");
       }
 
-     
-      
       return true;
     }),
+
+  //  body("tags")
+  //     .isArray({ min: 1 })
+  //     .withMessage("Selecione pelo menos uma tag!")
+  //     .bail()
+  //     .custom((tags) => {
+  //       if (tags.length === 0) {
+  //         throw new Error("Selecione pelo menos uma tag!");
+  //       }
+  //       return true;
+  //     }),
   ];
 };
 
@@ -93,5 +103,4 @@ const photoUpdateValidation = () => {
 module.exports = {
   photoInsertValidation,
   photoUpdateValidation,
-
 };
