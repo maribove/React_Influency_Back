@@ -48,7 +48,7 @@ const register = async (req, res) => {
 
   res.status(201).json({
     _id: newUser._id,
-    token: generateToken(newUser._id),
+    token: generateToken(newUser._id), 
   });
 };
 
@@ -183,7 +183,7 @@ const SearchUser = async (req, res) => {
   const users = await User.find({
     $or: [
       { name: new RegExp(q, "i") },
-      { interests: new RegExp(q, "i") } 
+      { interests: new RegExp(q, "i") }  
     ]
   }).exec();
   
