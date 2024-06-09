@@ -19,7 +19,6 @@ router.post("/",
   validate,
   insertPost);
 
-
 router.delete("/:id", authGuard, deletePost);
 router.get("/", authGuard, getAllPosts);
 router.get("/user/:id", authGuard, getUserPosts);
