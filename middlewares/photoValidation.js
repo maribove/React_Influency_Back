@@ -39,6 +39,15 @@ const photoInsertValidation = () => {
       .isEmpty()
       .withMessage("A data é obrigatória!"),
 
+      body("atuacao")
+      .not()
+      .equals("undefined")
+      .withMessage("O campo de atuação é obrigatório")
+      .isString()
+      .withMessage("O campo de atuação é obrigatório")
+      .isLength({ min: 3 })
+      .withMessage("O campo de atuação precisa ter no mínimo 3 caracteres."),
+
     
 
     body("image").custom((value, { req }) => {

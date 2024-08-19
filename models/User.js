@@ -8,8 +8,9 @@ const userSchema = new Schema(
     password: String,
     type: String,
     profileImage: String,
+    portfolio: String,
     bio: String,
-    interests: Array,  
+    interests: [String],  
   },
   {
     timestamps: true,

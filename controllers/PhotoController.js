@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 // Insert a photo, with an user related to it
 const insertPhoto = async (req, res) => {
   const { title } = req.body;
+  const { atuacao } = req.body;
   const { local } = req.body;
   const { date } = req.body;
   const { desc } = req.body;
@@ -28,6 +29,7 @@ const insertPhoto = async (req, res) => {
     desc,
     situacao,
     title,
+    atuacao,
     tags,
     userId: user._id,
     userName: user.name,
@@ -113,6 +115,7 @@ const getPhotoById = async (req, res) => {
 const updatePhoto = async (req, res) =>{
   const {id} = req.params
   const {title} = req.body
+  const {atuacao} = req.body
   const {desc} = req.body 
   const {date} = req.body 
   const {local} = req.body
@@ -137,6 +140,9 @@ const updatePhoto = async (req, res) =>{
 
   if(title){
     photo.title= title
+  }
+  if(atuacao){
+    photo.atuacao= atuacao
   }
   if(local){
     photo.local= local

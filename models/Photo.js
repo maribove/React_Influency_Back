@@ -12,7 +12,7 @@ const photoSchema = new Schema(
     local: String,
     userId: mongoose.ObjectId, 
     userName: String,
-    
+    atuacao: String,
    
   },
   {

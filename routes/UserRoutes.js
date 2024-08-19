@@ -8,7 +8,7 @@ const { register, login, getCurrentUser, update, getUserById, SearchUser } = req
 const validate = require("../middlewares/handleValidations")
 const { userCreateValidation, loginValidation, userUpdateValidation, } = require("../middlewares/userValidations")
 const authGuard = require ("../middlewares/authGuard");
-const { imageUpload } = require("../middlewares/imageUpload");
+const { upload } = require("../middlewares/portfolioUpload");
 
 // Routes
 router.post("/register", userCreateValidation(), validate, register);
@@ -20,7 +20,10 @@ router.put(
   authGuard,
   userUpdateValidation(),
   validate,
-  imageUpload.single("profileImage"),
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "portfolio", maxCount: 1 },
+  ]),
   update
 );
 router.get("/:id", getUserById)

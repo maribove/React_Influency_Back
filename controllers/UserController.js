@@ -93,67 +93,39 @@ const update = async (req, res) => {
   const { name, password, bio, interests } = req.body;
 
   let profileImage = null;
+  let portfolio = null;
 
-  if (req.file) {
-      profileImage = req.file.filename;
+  if (req.files) {
+    if (req.files.profileImage) {
+      profileImage = req.files.profileImage[0].filename;
+    }
+    if (req.files.portfolio) {
+      portfolio = req.files.portfolio[0].filename;
+    }
   }
 
   const reqUser = req.user;
-
-  const user = await User.findById(new mongoose.Types.ObjectId(reqUser._id)).select(
-      "-password"
-  );
+  const user = await User.findById(new mongoose.Types.ObjectId(reqUser._id)).select("-password");
 
   if (!user) {
-      return res.status(404).json({ errors: ["Usuário não encontrado!"] });
+    return res.status(404).json({ errors: ["Usuário não encontrado!"] });
   }
 
-  if (name) {
-      if (name.length < 3) {
-          return res.status(400).json({ errors: ["O nome deve ter mais de 3 caracteres."] });
-      }
-      user.name = name;
-  }
-
+  if (name) user.name = name;
   if (password) {
-      if (password.length < 6) {
-          return res.status(400).json({ errors: ["A senha deve ter mais de 6 caracteres."] });
-      }
-      if (!/[A-Z]/.test(password)) {
-          return res.status(400).json({ errors: ["A senha deve conter pelo menos uma letra maiúscula."] });
-      }
-      if (!/\d/.test(password)) {
-          return res.status(400).json({ errors: ["A senha deve conter pelo menos um número."] });
-      }
-      if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
-          return res.status(400).json({ errors: ["A senha deve conter pelo menos um caractere especial."] });
-      }
-
-      const salt = await bcrypt.genSalt();
-      const passwordHash = await bcrypt.hash(password, salt);
-      user.password = passwordHash;
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash(password, salt);
+    user.password = passwordHash;
   }
-
-  if (interests) {
-      user.interests = interests;
-  }
-
-  if (profileImage) {
-      user.profileImage = profileImage;
-  }
-
-  if (bio) {
-      if (bio.length < 5) {
-          return res.status(400).json({ errors: ["A biografia deve ter mais de 5 caracteres."] });
-      }
-      user.bio = bio;
-  }
+  if (bio) user.bio = bio;
+  if (interests) user.interests = interests;
+  if (profileImage) user.profileImage = profileImage;
+  if (portfolio) user.portfolio = portfolio;
 
   await user.save();
 
   res.status(200).json(user);
 };
-
 
 const getUserById = async (req, res) => {
   const { id } = req.params;
