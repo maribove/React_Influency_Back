@@ -36,7 +36,7 @@ const userCreateValidation = () => {
         return true;
       }),
 
-      body("interests")
+    body("interests")
       .isArray({ min: 1 })
       .withMessage("Selecione pelo menos um interesse!")
       .bail()

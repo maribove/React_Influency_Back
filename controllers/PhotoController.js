@@ -20,7 +20,7 @@ const insertPhoto = async (req, res) => {
 
   console.log(user.name);
 
-  // Create photo
+  // Criar nova vaga 
   const newPhoto = await Photo.create({
     image,
     local,

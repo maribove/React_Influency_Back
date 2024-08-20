@@ -2,6 +2,7 @@ const Post = require("../models/Post"); // Importando o modelo Post
 
 const mongoose = require("mongoose");
 
+//Post no feed
 // Inserir, com um usuário relacionado a ele
 const insertPost = async (req, res) => {
   const { publicacao } = req.body;
@@ -20,6 +21,7 @@ const insertPost = async (req, res) => {
 
   console.log(user.name);
 
+  //valores da publicação
   try {
     const newPost = await Post.create({
       publicacao,
