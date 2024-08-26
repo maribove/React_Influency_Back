@@ -14,7 +14,7 @@ const generateToken = (id) => {
 };
 // Register user and sign in
 const register = async (req, res) => {
-  const { name, email, password, type, interests } = req.body;
+  const { name, email, password, role, interests } = req.body;
 
   // check if user exists
   const user = await User.findOne({ email });
@@ -33,7 +33,7 @@ const register = async (req, res) => {
   const newUser = await User.create({
     name,
     email,
-    type,
+    role,
     interests,
     password: passwordHash,
   });
@@ -82,6 +82,7 @@ const login = async (req, res) => {
   // Return user with token
   res.status(200).json({
     _id: user._id,
+    role: user.role,
     profileImage: user.profileImage,
     token: generateToken(user._id),
   });
