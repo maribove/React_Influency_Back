@@ -10,13 +10,16 @@ const authGuard = require("../middlewares/authGuard")
 const roleGuard = require('../middlewares/roleGuard');
 
 const validate = require("../middlewares/handleValidations")
-const { imageUpload } = require("../middlewares/imageUpload")
+const { upload } = require("../middlewares/portfolioUpload")
 
 // ROUTES
 router.post("/",
   authGuard,
   roleGuard(['Empresa']), 
-  imageUpload.single("image"),
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "contrato", maxCount: 1 },
+  ]),
   photoInsertValidation(),
   validate,
   insertPhoto);

@@ -1,113 +1,89 @@
 const { body } = require("express-validator");
 
+// Validação para inserção de fotos
 const photoInsertValidation = () => {
   return [
     body("title")
       .not()
-      .equals("undefined")
+      .isEmpty()
       .withMessage("O título é obrigatório")
       .isString()
-      .withMessage("O título é obrigatório")
+      .withMessage("O título deve ser uma string")
       .isLength({ min: 3 })
       .withMessage("O título precisa ter no mínimo 3 caracteres."),
 
     body("desc")
       .not()
-      .equals("undefined")
+      .isEmpty()
       .withMessage("A descrição é obrigatória!")
       .isString()
-      .withMessage("A descrição é obrigatória")
+      .withMessage("A descrição deve ser uma string")
       .isLength({ min: 10 })
       .withMessage("A descrição precisa ter no mínimo 10 caracteres."),
 
-      body("local")
+    body("local")
       .not()
-      .equals("undefined")
+      .isEmpty()
       .withMessage("O campo local é obrigatório")
       .isString()
-      .withMessage("O campo local é obrigatório")
+      .withMessage("O local deve ser uma string")
       .isLength({ min: 3 })
       .withMessage("O local precisa ter no mínimo 3 caracteres."),
 
-      body("situacao")
+    body("situacao")
       .not()
       .isEmpty()
       .withMessage("O campo status é obrigatório!"),
 
-      body("date")
+    body("date")
       .not()
       .isEmpty()
       .withMessage("A data é obrigatória!"),
 
-      body("atuacao")
-      .not()
-      .equals("undefined")
-      .withMessage("O campo de atuação é obrigatório")
-      .isString()
-      .withMessage("O campo de atuação é obrigatório")
-      .isLength({ min: 3 })
-      .withMessage("O campo de atuação precisa ter no mínimo 3 caracteres."),
-
-    
-
     body("image").custom((value, { req }) => {
-      if (!req.file) {
+      if (!req.files || !req.files['image'] || req.files['image'].length === 0) {
         throw new Error("A imagem é obrigatória");
       }
-
       return true;
     }),
-
-  //  body("tags")
-  //     .isArray({ min: 1 })
-  //     .withMessage("Selecione pelo menos uma tag!")
-  //     .bail()
-  //     .custom((tags) => {
-  //       if (tags.length === 0) {
-  //         throw new Error("Selecione pelo menos uma tag!");
-  //       }
-  //       return true;
-  //     }),
   ];
 };
 
+// Validação para atualização de fotos
 const photoUpdateValidation = () => {
   return [
     body("title")
       .optional()
       .isString()
-      .withMessage("O título é obrigatório!")
+      .withMessage("O título deve ser uma string")
       .isLength({ min: 3 })
       .withMessage("O título precisa ter no mínimo 3 caracteres."),
 
-      body("desc")
+    body("desc")
       .optional()
       .isString()
-      .withMessage("A descrição é obrigatória!")
+      .withMessage("A descrição deve ser uma string")
       .isLength({ min: 10 })
       .withMessage("A descrição precisa ter no mínimo 10 caracteres."),
-      
-      body("local")
+
+    body("local")
       .optional()
       .isString()
-      .withMessage("O local é obrigatório!")
+      .withMessage("O local deve ser uma string")
       .isLength({ min: 3 })
       .withMessage("O local precisa ter no mínimo 3 caracteres."),
 
-      body("situacao")
+    body("situacao")
       .optional()
       .isString()
-      .withMessage("O status é obrigatório!"),
+      .withMessage("O status deve ser uma string"),
 
-      body("date")
+    body("date")
       .optional()
       .isString()
-      .withMessage("A data é obrigatória!"),
-
-      
-  ]
-}
-
+      .withMessage("A data deve ser uma string"),
+  ];
+};
 
 module.exports = {
   photoInsertValidation,

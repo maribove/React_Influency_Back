@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const photoSchema = new Schema(
+const photoSchema = new Schema(  
   {
     image: String,
+    contrato: String,
     title: String,
     desc: String,
     date: String,
@@ -12,7 +13,7 @@ const photoSchema = new Schema(
     local: String,
     userId: mongoose.ObjectId, 
     userName: String,
-    atuacao: String,
+    
    
   },
   {
