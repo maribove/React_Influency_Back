@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // CONTROLLER
-const { insertPost, deletePost, getAllPosts, getUserPosts, getPostById, updatePost, LikePost, commentPost } = require("../controllers/PostController");
+const { insertPost, deletePost, getAllPosts, getPostsByInterests, getUserPosts, getPostById, updatePost, LikePost, commentPost } = require("../controllers/PostController");
 
 // MIDDLEWARES
 const { postInsertValidation, postUpdateValidation, commentValidation } = require("../middlewares/postValidation")
@@ -20,7 +20,8 @@ router.post("/",
   insertPost);
 
 router.delete("/:id", authGuard, deletePost);
-router.get("/", authGuard, getAllPosts);
+router.get("/", authGuard, getPostsByInterests, postUpdateValidation(), validate, updatePost);
+//router.get("/", adminGuard, getAllPosts);
 router.get("/user/:id", authGuard, getUserPosts);
 router.get("/:id", authGuard, getPostById);
 router.put("/:id", authGuard, postUpdateValidation(), validate, updatePost);
