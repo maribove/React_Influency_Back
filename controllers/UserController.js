@@ -8,10 +8,11 @@ const jwtSecret = process.env.JWT_SECRET;
 
 // Generate user token
 const generateToken = (id) => {
-  return jwt.sign({ id }, jwtSecret, {
-    expiresIn: "1d",
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "1d", // Expira em 1 dia
   });
 };
+
 // Register user and sign in
 const register = async (req, res) => {
   const { name, email, password, role, interests } = req.body;
@@ -24,7 +25,6 @@ const register = async (req, res) => {
     return;
   }
   
-
   // Generate password hash
   const salt = await bcrypt.genSalt();
   const passwordHash = await bcrypt.hash(password, salt);
@@ -46,9 +46,17 @@ const register = async (req, res) => {
     return;
   }
 
-  res.status(201).json({
+   // Gere o token JWT para o novo usuário
+  const token = generateToken(newUser._id);
+
+  // Retorne o token e os dados do usuário
+  return res.status(201).json({
     _id: newUser._id,
-    token: generateToken(newUser._id),
+    name: newUser.name,
+    email: newUser.email,
+    role: newUser.role,
+    interests: newUser.interests,
+    token: token,
   });
 };
 
@@ -79,13 +87,17 @@ const login = async (req, res) => {
     return;
   }
 
+  const token = generateToken(user._id);
+  console.log("Token no Login:", token); // Verifique o token gerado
+
   // Return user with token
   res.status(200).json({
     _id: user._id,
     role: user.role,
     profileImage: user.profileImage,
-    token: generateToken(user._id),
+    token: token,
   });
+
 };
 
 // Update user

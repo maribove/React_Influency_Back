@@ -58,7 +58,7 @@ const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(id);
 
-    if (!post.userId.equals(reqUser._id)) {
+    if (!post.userId.equals(reqUser._id) && reqUser.role !== "admin") {
       return res.status(422).json({ errors: ["Ocorreu um erro, tente novamente mais tarde"] });
     }
 
@@ -78,6 +78,40 @@ const getAllPosts = async (req, res) => {
   return res.status(200).json(posts)
 }
 
+const getPostsByInterests = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({ errors: ["Usuário não autenticado."] });
+    }
+
+    // Verifique se o usuário é Admin
+    if (user.role === "admin") {
+      // Se for Admin, retorne todos os posts
+      const posts = await Post.find({}).sort([["createdAt", -1]]).exec();
+      return res.status(200).json(posts);
+    }
+
+    //interesses do usuário logado
+    const userInterests = user.interests;
+
+    //usuários que têm pelo menos um interesse em comum
+    const usersWithCommonInterests = await User.find({
+      interests: { $in: userInterests },
+    }).select("_id");
+
+    const userIds = usersWithCommonInterests.map(user => user._id);
+
+    //pega os posts dos usuários
+    const posts = await Post.find({ userId: { $in: userIds } }).sort([["createdAt", -1]]).exec();
+
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error("Erro ao buscar publicações:", error);
+    res.status(500).json({ errors: ["Erro ao buscar publicações."] });
+  }
+};
 
 // Obter publicações do usuário
 const getUserPosts = async (req, res) => {
@@ -122,6 +156,9 @@ const getPostById = async (req, res) => {
 const updatePost = async (req, res) => {
   const { id } = req.params;
   const { publicacao } = req.body;
+
+  console.log("ID do Post:", id); // Log para verificar se o ID está correto
+  console.log("Dados da Publicação:", req.body); // Log para verificar se os dados estão corretos
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ errors: ["ID de postagem inválido."] });
@@ -216,6 +253,7 @@ module.exports = {
   insertPost,
   deletePost,
   getAllPosts,
+  getPostsByInterests,
   getUserPosts,
   getPostById,
   updatePost,
