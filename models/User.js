@@ -8,7 +8,7 @@ const userSchema = new Schema(
     role: {
       type: String,
       enum: ['admin', 'Influenciador', 'Empresa'], // Define os valores permitidos para o campo role
-      required: true, // Garante que o campo role seja sempre preenchido
+       
     },
     password: String,
     profileImage: String,
