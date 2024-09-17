@@ -1,5 +1,7 @@
 const User = require("../models/User");
 
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { default: mongoose } = require("mongoose");
@@ -171,9 +173,98 @@ const SearchUser = async (req, res) => {
   }).exec();
   
   // pesquisar por letra
-  //  const users = await User.find({ name: new RegExp(q, "i") }).exec(); 
+  // const users = await User.find({ name: new RegExp(q, "i") }).exec(); 
 
   res.status(200).json(users);
+};
+
+
+const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    console.log("Solicitação de redefinição de senha recebida para:", email);
+
+    // Verifique se o e-mail está cadastrado
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ errors: ["Usuário não encontrado!"] });
+    }
+
+    // Gerar um token de redefinição de senha
+    const token = crypto.randomBytes(20).toString("hex");
+
+    // Definir o token e a expiração no usuário
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hora
+
+    await user.save();
+    console.log("Token de redefinição de senha salvo no banco de dados.");
+
+    // Configurar o transporte de e-mail (usando o Gmail neste exemplo)
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Configurar o conteúdo do e-mail
+    const mailOptions = {
+      to: user.email,
+      from: process.env.EMAIL_USER,
+      subject: "Redefinição de Senha",
+      text: `
+        Você está recebendo este e-mail porque solicitou a redefinição de senha para sua conta.
+        Por favor, clique no link ou cole-o em seu navegador para concluir o processo:
+        http://localhost:3000/reset-password/${token}
+        Se você não solicitou isso, por favor ignore este e-mail.
+      `,
+    };
+
+    // Enviar o e-mail
+    await transporter.sendMail(mailOptions);
+    console.log("E-mail de redefinição de senha enviado para:", user.email);
+
+    res.status(200).json({ message: "E-mail de redefinição de senha enviado." });
+  } catch (error) {
+    console.error("Erro ao processar a solicitação de redefinição de senha:", error);
+    res.status(500).json({ errors: ["Erro ao processar a solicitação de redefinição de senha."] });
+  }
+};
+
+
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  try {
+    // Encontrar o usuário pelo token de redefinição
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }, // Certificar-se de que o token não expirou
+    });
+
+    if (!user) {
+      return res.status(400).json({ errors: ["Token inválido ou expirado."] });
+    }
+
+    // Atualizar a senha do usuário
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+    user.password = hashedPassword;
+
+    // Limpar o token e a expiração
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.status(200).json({ message: "Senha redefinida com sucesso." });
+  } catch (error) {
+    res.status(500).json({ errors: ["Erro ao redefinir a senha."] });
+  }
 };
 
 
@@ -185,4 +276,6 @@ module.exports = {
   update,
   getUserById,
   SearchUser,
+  requestPasswordReset,
+  resetPassword,
 };

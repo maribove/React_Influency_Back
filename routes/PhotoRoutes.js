@@ -25,7 +25,7 @@ router.post("/",
   insertPhoto);
 
   
-router.delete("/:id", authGuard, roleGuard(['Empresa'], ['admin']), roleGuard(['admin']), deletePhoto)
+router.delete("/:id", authGuard, roleGuard(['Empresa'], ['admin']), deletePhoto)
 router.get("/", authGuard, getAllPhotos)
 router.get("/user/:id", authGuard, getUserPhotos)
 router.get("/search", authGuard, SearchPhoto) 
