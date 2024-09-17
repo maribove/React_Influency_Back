@@ -23,7 +23,7 @@ router.post("/",
 
   
 router.delete("/:id", authGuard, roleGuard(['Empresa'], ['admin']), roleGuard(['admin']), deletePhoto)
-router.get("/", authGuard, roleGuard(['Empresa']), getAllPhotos)
+router.get("/", authGuard, getAllPhotos)
 router.get("/user/:id", authGuard, getUserPhotos)
 router.get("/search", authGuard, SearchPhoto) 
 router.get("/:id", authGuard, getPhotoById)
