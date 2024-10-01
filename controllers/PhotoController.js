@@ -4,7 +4,8 @@ const User = require("../models/User");
 
 // Inserir uma foto
 const insertPhoto = async (req, res) => {
-  const { title, local, date, desc, valor, situacao, tags } = req.body;
+const { title, local, date, desc, valor, situacao, tags } = req.body;
+
   
   
   if (!req.files || !req.files.image || req.files.image.length === 0) {
@@ -55,17 +56,15 @@ const deletePhoto = async (req, res) => {
   const reqUser = req.user;
 
   try {
-    const photo = await Photo.findById(new mongoose.Types.ObjectId(id));
+    const photo = await Photo.findById((id));
 
     if (!photo) {
       return res.status(404).json({ errors: ["Vaga não encontrada!"] });
     }
 
     // Verificar se a vaga pertence ao usuário
-    if (!photo.userId.equals(reqUser._id)) {
-      return res.status(422).json({
-        errors: ["Ocorreu um erro, tente novamente mais tarde."],
-      });
+    if (photo.userId.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+      return res.status(403).json({ errors: ["Ação não permitida!"] });
     }
 
     await Photo.findByIdAndDelete(photo._id);
