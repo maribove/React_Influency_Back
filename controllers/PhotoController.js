@@ -4,7 +4,8 @@ const User = require("../models/User");
 
 // Inserir uma foto
 const insertPhoto = async (req, res) => {
-  const { title, local, date, desc, situacao, tags } = req.body; //
+const { title, local, date, desc, valor, situacao, tags } = req.body;
+
   
   
   if (!req.files || !req.files.image || req.files.image.length === 0) {
@@ -27,14 +28,14 @@ const insertPhoto = async (req, res) => {
       return res.status(404).json({ errors: ["Usuário não encontrado."] });
     }
 
-    // Criar nova vafa
+    // Criar nova vaga
     const newPhoto = await Photo.create({
       image,
       local,
       date,
       desc,
       situacao,
-      
+      valor,
       title,
       tags,
       contrato,
@@ -158,6 +159,95 @@ const SearchPhoto = async (req, res) => {
   res.status(200).json(photos);
 };
 
+// Função para aplicar a uma vaga
+const applyToJob = async (req, res) => {
+  const { id } = req.params; // ID da vaga (photo)
+  const reqUser = req.user;  // Usuário logado (influenciador)
+  if (req.user.role !== "Influenciador") {
+    return res.status(403).json({ errors: ["Somente influenciadores podem aplicar para esta vaga."] });
+  }
+
+  try {
+    const photo = await Photo.findById(id);
+
+    // Verificar se a vaga existe
+    if (!photo) {
+      return res.status(404).json({ errors: ["Vaga não encontrada."] });
+    }
+
+    // Verificar se o usuário já aplicou para a vaga
+    const alreadyApplied = photo.appliedInfluencers.find(influencer => influencer.userId.equals(reqUser._id));
+    if (alreadyApplied) {
+      return res.status(422).json({ errors: ["Você já aplicou para esta vaga."] });
+    }
+
+    // Adicionar o influenciador à lista de inscritos
+    photo.appliedInfluencers.push({ userId: reqUser._id });
+    await photo.save();
+
+    res.status(200).json({ message: "Inscrição realizada com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao aplicar para a vaga:", error);
+    res.status(500).json({ errors: ["Erro ao aplicar para a vaga."] });
+  }
+};
+
+// Função para cancelar a inscrição
+const cancelApplication = async (req, res) => {
+  const { id } = req.params;
+  const reqUser = req.user;
+
+  if (req.user.role !== "Influenciador") {
+    return res.status(403).json({ errors: ["Somente influenciadores podem aplicar para esta vaga."] });
+  }
+
+  try {
+    const photo = await Photo.findById(id);
+    
+
+    // Verificar se a vaga existe
+    if (!photo) {
+      return res.status(404).json({ errors: ["Vaga não encontrada."] });
+    }
+
+    // Verificar se o influenciador está inscrito
+    const appliedIndex = photo.appliedInfluencers.findIndex(influencer => influencer.userId.equals(reqUser._id));
+    if (appliedIndex === -1) {
+      return res.status(422).json({ errors: ["Você não está inscrito para esta vaga."] });
+    }
+
+    // Remover o influenciador da lista de inscritos
+    photo.appliedInfluencers.splice(appliedIndex, 1);
+    await photo.save();
+
+    res.status(200).json({ message: "Inscrição cancelada com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao cancelar a inscrição:", error);
+    res.status(500).json({ errors: ["Erro ao cancelar a inscrição."] });
+  }
+};
+
+// Função para listar os influenciadores que aplicaram a uma vaga
+const getApplicants = async (req, res) => {
+  const { id } = req.params;
+  if (req.user.role !== "Empresa") {
+    return res.status(403).json({ errors: ["Somente empresas podem visualizar os aplicantes."] });
+  }
+
+  try {
+    const photo = await Photo.findById(id).populate("appliedInfluencers.userId", "name profileImage");
+
+    if (!photo) {
+      return res.status(404).json({ errors: ["Vaga não encontrada."] });
+    }
+
+    res.status(200).json(photo.appliedInfluencers);
+  } catch (error) {
+    console.error("Erro ao buscar aplicantes:", error);
+    res.status(500).json({ errors: ["Erro ao buscar aplicantes."] });
+  }
+};
+
 module.exports = {
   insertPhoto,
   deletePhoto,
@@ -166,4 +256,7 @@ module.exports = {
   getPhotoById,
   updatePhoto,
   SearchPhoto,
+  applyToJob,
+  cancelApplication,
+  getApplicants,
 };
