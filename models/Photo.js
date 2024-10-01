@@ -8,12 +8,18 @@ const photoSchema = new Schema(
     title: String,
     desc: String,
     date: String,
+    valor: Number,
     situacao: String,
     tags: Array,
     local: String,
     userId: mongoose.ObjectId, 
     userName: String,
-    
+    appliedInfluencers: [
+      {
+        userId: { type: mongoose.ObjectId, ref: "User" }, // Ref o influenciador
+        appliedAt: { type: Date, default: Date.now },
+      },
+    ], 
    
   },
   {
