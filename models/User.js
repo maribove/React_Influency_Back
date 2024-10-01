@@ -17,6 +17,9 @@ const userSchema = new Schema(
     interests: [String],  
     instagram: String,
     emailcontato: String,
+    resetPasswordToken: String, // redefinição de senha
+    resetPasswordExpires: Date, // expiração do token
+
   },
   {
     timestamps: true,

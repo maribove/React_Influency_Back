@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // Controller
-const { register, login, getCurrentUser, update, getUserById, SearchUser } = require("../controllers/UserController");
+const { register, login, getCurrentUser, update, getUserById, SearchUser, requestPasswordReset, resetPassword} = require("../controllers/UserController");
 
 // middlewares
 const validate = require("../middlewares/handleValidations")
@@ -12,6 +12,8 @@ const { upload } = require("../middlewares/portfolioUpload");
 
 // Routes
 router.post("/register", userCreateValidation(), validate, register);
+router.post("/forgot-password", requestPasswordReset);
+router.post("/reset-password/:token", resetPassword);
 router.get("/profile", authGuard, getCurrentUser);
 router.get("/search", authGuard, SearchUser) 
 router.post("/login", loginValidation(), validate, login);

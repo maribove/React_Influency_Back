@@ -40,6 +40,11 @@ const photoInsertValidation = () => {
       .isEmpty()
       .withMessage("A data é obrigatória!"),
 
+    body("valor")
+      .not()
+      .isEmpty()
+      .withMessage("O Valor é obrigatório!"),
+
     body("image").custom((value, { req }) => {
       if (!req.files || !req.files['image'] || req.files['image'].length === 0) {
         throw new Error("A imagem é obrigatória");
