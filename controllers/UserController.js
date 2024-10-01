@@ -101,7 +101,7 @@ const login = async (req, res) => {
 // Update user
 // Update user
 const update = async (req, res) => {
-  const { name, password, bio, interests } = req.body;
+  const { name, password, bio, interests, instagram, emailcontato } = req.body;
 
   let profileImage = null;
   let portfolio = null;
@@ -129,6 +129,8 @@ const update = async (req, res) => {
     user.password = passwordHash;
   }
   if (bio) user.bio = bio;
+  if (emailcontato) user.emailcontato = emailcontato;
+  if (instagram) user.instagram = instagram;
   if (interests) user.interests = interests;
   if (profileImage) user.profileImage = profileImage;
   if (portfolio) user.portfolio = portfolio;

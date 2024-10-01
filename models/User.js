@@ -15,6 +15,8 @@ const userSchema = new Schema(
     portfolio: String,
     bio: String,
     interests: [String],  
+    instagram: String,
+    emailcontato: String,
   },
   {
     timestamps: true,
