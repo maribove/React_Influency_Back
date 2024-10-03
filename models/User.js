@@ -19,6 +19,7 @@ const userSchema = new Schema(
     emailcontato: String,
     resetPasswordToken: String, // redefinição de senha
     resetPasswordExpires: Date, // expiração do token
+    telefone: String,
 
   },
   {
