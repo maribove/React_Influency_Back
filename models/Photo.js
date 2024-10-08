@@ -16,10 +16,10 @@ const photoSchema = new Schema(
     userName: String,
     appliedInfluencers: [
       {
-        userId: { type: mongoose.ObjectId, ref: "User" }, // Ref o influenciador
+        userId: { type: mongoose.ObjectId, ref: "User" }, // Ref para o influenciador
         appliedAt: { type: Date, default: Date.now },
       },
-    ], 
+    ],
    
   },
   {

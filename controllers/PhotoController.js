@@ -4,7 +4,8 @@ const User = require("../models/User");
 
 // Inserir uma foto
 const insertPhoto = async (req, res) => {
-  const { title, local, date, desc, valor, situacao, tags } = req.body;
+const { title, local, date, desc, valor, situacao, tags } = req.body;
+
   
   
   if (!req.files || !req.files.image || req.files.image.length === 0) {
@@ -55,17 +56,15 @@ const deletePhoto = async (req, res) => {
   const reqUser = req.user;
 
   try {
-    const photo = await Photo.findById(new mongoose.Types.ObjectId(id));
+    const photo = await Photo.findById((id));
 
     if (!photo) {
       return res.status(404).json({ errors: ["Vaga não encontrada!"] });
     }
 
     // Verificar se a vaga pertence ao usuário
-    if (!photo.userId.equals(reqUser._id)) {
-      return res.status(422).json({
-        errors: ["Ocorreu um erro, tente novamente mais tarde."],
-      });
+    if (photo.userId.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+      return res.status(403).json({ errors: ["Ação não permitida!"] });
     }
 
     await Photo.findByIdAndDelete(photo._id);
@@ -164,7 +163,8 @@ const SearchPhoto = async (req, res) => {
 const applyToJob = async (req, res) => {
   const { id } = req.params; // ID da vaga (photo)
   const reqUser = req.user;  // Usuário logado (influenciador)
-  if (req.user.role !== "Influenciador") {
+
+  if (reqUser.role !== "Influenciador") {
     return res.status(403).json({ errors: ["Somente influenciadores podem aplicar para esta vaga."] });
   }
 
@@ -195,16 +195,15 @@ const applyToJob = async (req, res) => {
 
 // Função para cancelar a inscrição
 const cancelApplication = async (req, res) => {
-  const { id } = req.params;
-  const reqUser = req.user;
+  const { id } = req.params; // ID da vaga
+  const reqUser = req.user;  // Usuário logado (influenciador)
 
-  if (req.user.role !== "Influenciador") {
-    return res.status(403).json({ errors: ["Somente influenciadores podem aplicar para esta vaga."] });
+  if (reqUser.role !== "Influenciador") {
+    return res.status(403).json({ errors: ["Somente influenciadores podem cancelar a inscrição para esta vaga."] });
   }
 
   try {
     const photo = await Photo.findById(id);
-    
 
     // Verificar se a vaga existe
     if (!photo) {
@@ -228,12 +227,9 @@ const cancelApplication = async (req, res) => {
   }
 };
 
-// Função para listar os influenciadores que aplicaram a uma vaga
+// Verificar se o influenciador já aplicou a uma vaga
 const getApplicants = async (req, res) => {
   const { id } = req.params;
-  if (req.user.role !== "Empresa") {
-    return res.status(403).json({ errors: ["Somente empresas podem visualizar os aplicantes."] });
-  }
 
   try {
     const photo = await Photo.findById(id).populate("appliedInfluencers.userId", "name profileImage");
@@ -242,7 +238,13 @@ const getApplicants = async (req, res) => {
       return res.status(404).json({ errors: ["Vaga não encontrada."] });
     }
 
-    res.status(200).json(photo.appliedInfluencers);
+    // Verifica se o influenciador logado já aplicou à vaga
+    const alreadyApplied = photo.appliedInfluencers.some((applicant) =>
+      applicant.userId.equals(req.user._id)
+    );
+
+    // Retorna o estado de aplicação e os influenciadores aplicados
+    res.status(200).json({ applied: alreadyApplied, applicants: photo.appliedInfluencers });
   } catch (error) {
     console.error("Erro ao buscar aplicantes:", error);
     res.status(500).json({ errors: ["Erro ao buscar aplicantes."] });
