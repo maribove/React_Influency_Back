@@ -6,10 +6,7 @@ const mongoose = require("mongoose");
 // Inserir, com um usuário relacionado a ele
 const insertPost = async (req, res) => {
   const { publicacao } = req.body;
-  const image = req.file.filename; 
-
-  console.log(req.body);
-
+  const image = req.file.filename;
 
   const reqUser = req.user;
 
@@ -17,9 +14,8 @@ const insertPost = async (req, res) => {
     return res.status(400).json({ errors: ["ID de usuário inválido."] });
   }
 
+  // Buscar o usuário a partir do ID
   const user = await User.findById(reqUser._id);
-
-  console.log(user.name);
 
   //valores da publicação
   try {
@@ -28,6 +24,7 @@ const insertPost = async (req, res) => {
       image,
       userId: user._id,
       userName: user.name,
+      profileImage: user.profileImage, // Adicionando a foto de perfil do usuário
     });
 
     if (!newPost) {
@@ -40,8 +37,6 @@ const insertPost = async (req, res) => {
   } catch (error) {
     res.status(500).json({ errors: ["Erro ao criar publicação."] });
   }
-
-  console.log(req.user)
 };
 
 
