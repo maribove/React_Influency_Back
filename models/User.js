@@ -7,20 +7,18 @@ const userSchema = new Schema(
     email: String,
     role: {
       type: String,
-      enum: ['admin', 'Influenciador', 'Empresa'], // Define os valores permitidos para o campo role
-       
+      enum: ['admin', 'Influenciador', 'Empresa'], // Valores permitidos
     },
     password: String,
     profileImage: String,
     portfolio: String,
     bio: String,
-    interests: [String],  
+    interests: [String],
     instagram: String,
     emailcontato: String,
-    resetPasswordToken: String, // redefinição de senha
-    resetPasswordExpires: Date, // expiração do token
+    resetPasswordToken: String, // Token para redefinir a senha
+    resetPasswordExpires: Date, // Expiração do token de redefinição de senha
     telefone: String,
-
   },
   {
     timestamps: true,

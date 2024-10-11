@@ -1,5 +1,4 @@
 const User = require("../models/User");
-
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
@@ -26,7 +25,7 @@ const register = async (req, res) => {
     res.status(422).json({ errors: ["E-mail já está sendo utilizado. Por favor, utilize outro e-mail!"] });
     return;
   }
-  
+
   // Generate password hash
   const salt = await bcrypt.genSalt();
   const passwordHash = await bcrypt.hash(password, salt);
@@ -40,7 +39,7 @@ const register = async (req, res) => {
     password: passwordHash,
   });
 
-  // If user was created sucessfully, return the token
+  // If user was created successfully, return the token
   if (!newUser) {
     res.status(422).json({
       errors: ["Houve um erro, por favor tente novamente mais tarde."],
@@ -48,7 +47,7 @@ const register = async (req, res) => {
     return;
   }
 
-   // Gere o token JWT para o novo usuário
+  // Gere o token JWT para o novo usuário
   const token = generateToken(newUser._id);
 
   // Retorne o token e os dados do usuário
@@ -88,7 +87,6 @@ const login = async (req, res) => {
   }
 
   const token = generateToken(user._id);
-  console.log("Token no Login:", token); // Verifique o token gerado
 
   // Return user with token
   res.status(200).json({
@@ -97,10 +95,8 @@ const login = async (req, res) => {
     profileImage: user.profileImage,
     token: token,
   });
-
 };
 
-// Update user
 // Update user
 const update = async (req, res) => {
   const { name, password, bio, interests, instagram, emailcontato, telefone } = req.body;
@@ -143,6 +139,7 @@ const update = async (req, res) => {
   res.status(200).json(user);
 };
 
+// Get user by ID
 const getUserById = async (req, res) => {
   const { id } = req.params;
 
@@ -164,6 +161,7 @@ const getUserById = async (req, res) => {
   }
 };
 
+// Search for users by name or interests
 const SearchUser = async (req, res) => {
   const { q } = req.query;
 
@@ -174,20 +172,15 @@ const SearchUser = async (req, res) => {
       { interests: new RegExp(q, "i") } 
     ]
   }).exec();
-  
-  // pesquisar por letra
-  // const users = await User.find({ name: new RegExp(q, "i") }).exec(); 
 
   res.status(200).json(users);
 };
 
-
+// Password reset request
 const requestPasswordReset = async (req, res) => {
   const { email } = req.body;
 
   try {
-    console.log("Solicitação de redefinição de senha recebida para:", email);
-
     // Verifique se o e-mail está cadastrado
     const user = await User.findOne({ email });
     if (!user) {
@@ -202,7 +195,6 @@ const requestPasswordReset = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hora
 
     await user.save();
-    console.log("Token de redefinição de senha salvo no banco de dados.");
 
     // Configurar o transporte de e-mail (usando o Gmail neste exemplo)
     const transporter = nodemailer.createTransport({
@@ -218,25 +210,33 @@ const requestPasswordReset = async (req, res) => {
       to: user.email,
       from: process.env.EMAIL_USER,
       subject: "Redefinição de Senha",
-      text: `
-        Você está recebendo este e-mail porque solicitou a redefinição de senha para sua conta.
-        Por favor, clique no link ou cole-o em seu navegador para concluir o processo:
-        http://localhost:3000/reset-password/${token}
-        Se você não solicitou isso, por favor ignore este e-mail.
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; text-align: justify;">
+          <h2>Redefinição de Senha</h2>
+          <p>Olá, ${user.name}!</p>
+          <p>Você solicitou a redefinição de sua senha. Por favor, clique no botão abaixo para redefini-la:</p>
+          <a href="http://localhost:3000/reset-password/${token}" 
+             style="background-color: #EF97B4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            Redefinir Senha
+          </a>
+          <p>Ou cole o seguinte link em seu navegador:</p>
+          <p><a href="http://localhost:3000/reset-password/${token}">http://localhost:3000/reset-password/${token}</a></p>
+         
+          <p>Se você não solicitou esta redefinição, ignore este email.</p>
+          <p>Atenciosamente,<br> Equipe Influency</p>
+        </div>
       `,
     };
+    
 
     // Enviar o e-mail
     await transporter.sendMail(mailOptions);
-    console.log("E-mail de redefinição de senha enviado para:", user.email);
 
     res.status(200).json({ message: "E-mail de redefinição de senha enviado." });
   } catch (error) {
-    console.error("Erro ao processar a solicitação de redefinição de senha:", error);
     res.status(500).json({ errors: ["Erro ao processar a solicitação de redefinição de senha."] });
   }
 };
-
 
 const resetPassword = async (req, res) => {
   const { token } = req.params;
@@ -251,6 +251,25 @@ const resetPassword = async (req, res) => {
 
     if (!user) {
       return res.status(400).json({ errors: ["Token inválido ou expirado."] });
+    }
+
+    // Validar a senha
+    const passwordErrors = [];
+    if (password.length < 6) {
+      passwordErrors.push("A senha deve ter no mínimo 6 caracteres");
+    }
+    if (!/[A-Z]/.test(password)) {
+      passwordErrors.push("A senha deve conter pelo menos uma letra maiúscula");
+    }
+    if (!/\d/.test(password)) {
+      passwordErrors.push("A senha deve conter pelo menos um número");
+    }
+    if (!/[^a-zA-Z0-9]/.test(password)) {
+      passwordErrors.push("A senha deve conter pelo menos um caractere especial");
+    }
+
+    if (passwordErrors.length > 0) {
+      return res.status(400).json({ errors: passwordErrors });
     }
 
     // Atualizar a senha do usuário
@@ -269,8 +288,6 @@ const resetPassword = async (req, res) => {
     res.status(500).json({ errors: ["Erro ao redefinir a senha."] });
   }
 };
-
-
 
 module.exports = {
   register,

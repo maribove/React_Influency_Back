@@ -18,7 +18,6 @@ const Suporte = async (req, res) => {
                 user: process.env.EMAIL_USER, // Seu email
                 pass: process.env.EMAIL_PASS // Sua senha ou chave de acesso
             }
-            
         });
 
         const htmlContent = `
@@ -32,9 +31,9 @@ const Suporte = async (req, res) => {
             </div>
         `;
 
-         // Configuração do email
-         let info = await transporter.sendMail({
-            from: process.env.EMAIL_USER, // Use seu próprio email como remetente
+        // Configuração do email
+        let info = await transporter.sendMail({
+            from: `<${email}>`, // Usa o nome e email do usuário como remetente
             to: process.env.EMAIL_USER, // Para onde o suporte será enviado
             subject: "Suporte - Dúvida de " + name,
             html: htmlContent, // Envia o conteúdo HTML
@@ -43,7 +42,7 @@ const Suporte = async (req, res) => {
 
         // Salvar no banco de dados
         const novoSuporte = new SuporteSchema({ name, email, message });
-        await novoSuporte.save(); // Salva a mensagem no MongoDB
+        await novoSuporte.save(); // Salva a mensagem no MongoDB 
 
         res.status(200).json({ message: 'E-mail enviado com sucesso!' });
 
