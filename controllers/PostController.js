@@ -6,7 +6,8 @@ const mongoose = require("mongoose");
 // Inserir, com um usuário relacionado a ele
 const insertPost = async (req, res) => {
   const { publicacao } = req.body;
-  const image = req.file.filename;
+  const image = req.file ? req.file.filename : null; 
+
 
   const reqUser = req.user;
 
@@ -24,7 +25,7 @@ const insertPost = async (req, res) => {
       image,
       userId: user._id,
       userName: user.name,
-      profileImage: user.profileImage, // Adicionando a foto de perfil do usuário
+      profileImage: user.profileImage, 
     });
 
     if (!newPost) {

@@ -130,7 +130,9 @@ const update = async (req, res) => {
   if (telefone) user.telefone = telefone;
   if (emailcontato) user.emailcontato = emailcontato;
   if (instagram) user.instagram = instagram;
-  if (interests) user.interests = interests;
+ if (interests) {
+    user.interests = Array.isArray(interests) ? interests : interests.split(',').map(item => item.trim().toLowerCase());
+  }
   if (profileImage) user.profileImage = profileImage;
   if (portfolio) user.portfolio = portfolio;
 
