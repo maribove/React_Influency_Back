@@ -230,6 +230,7 @@ const cancelApplication = async (req, res) => {
 // Verificar se o influenciador já aplicou a uma vaga
 const getApplicants = async (req, res) => {
   const { id } = req.params;
+  const reqUser = req.user; // Usuário logado
 
   try {
     const photo = await Photo.findById(id).populate("appliedInfluencers.userId", "name profileImage");
@@ -240,7 +241,7 @@ const getApplicants = async (req, res) => {
 
     // Verifica se o influenciador logado já aplicou à vaga
     const alreadyApplied = photo.appliedInfluencers.some((applicant) =>
-      applicant.userId.equals(req.user._id)
+      applicant.userId.equals(reqUser._id)
     );
 
     // Retorna o estado de aplicação e os influenciadores aplicados
