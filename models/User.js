@@ -15,8 +15,12 @@ const userSchema = new Schema(
     portfolio: String,
     bio: String,
     interests: [String],  
+    instagram: String,
+    emailcontato: String,
     resetPasswordToken: String, // redefinição de senha
     resetPasswordExpires: Date, // expiração do token
+    telefone: String,
+
   },
   {
     timestamps: true,
