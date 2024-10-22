@@ -5,7 +5,8 @@ const router = express.Router();
 router.use("/api/users", require("./UserRoutes"));
 router.use("/api/photos", require("./PhotoRoutes"));
 router.use("/api/posts", require("./PostRoutes"));
-router.use("/api/suporte", require("./SuporteRoutes")); // A linha está correta
+router.use("/api/suporte", require("./SuporteRoutes")); 
+router.use("/api/events", require("./eventRoutes")); 
 
 // Rota de teste
 router.get("/", (req, res) => {
