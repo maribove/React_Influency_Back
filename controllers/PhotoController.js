@@ -241,7 +241,7 @@ const getApplicants = async (req, res) => {
 
     // Verifica se o influenciador logado já aplicou à vaga
     const alreadyApplied = photo.appliedInfluencers.some((applicant) =>
-      applicant.userId.equals(reqUser._id)
+      applicant.userId && applicant.userId.equals(reqUser._id) // Adicionando verificação se userId não é null
     );
 
     // Retorna o estado de aplicação e os influenciadores aplicados
