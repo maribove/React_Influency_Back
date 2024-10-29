@@ -8,7 +8,7 @@ const eventInsertValidation = () => {
       .isLength({ min: 3 })
       .withMessage('O título deve ter no mínimo 3 caracteres.'),
     
-    body('description')
+    body('desc')
       .notEmpty()
       .withMessage('A descrição é obrigatória.')
       .isLength({ min: 10 })
@@ -35,7 +35,7 @@ const eventUpdateValidation = () => {
       .isLength({ min: 3 })
       .withMessage('O título deve ter no mínimo 3 caracteres.'),
 
-    body('description')
+    body('desc')
       .optional()
       .isLength({ min: 10 })
       .withMessage('A descrição deve ter no mínimo 10 caracteres.'),
