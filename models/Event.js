@@ -5,7 +5,7 @@ const eventSchema = new mongoose.Schema({
   desc: { type: String, required: true },
   start: { type: Date, required: true },
   end: { type: Date, required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Referência ao influenciador
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 });
 
 const Event = mongoose.model("Event", eventSchema);
