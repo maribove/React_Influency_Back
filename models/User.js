@@ -19,6 +19,7 @@ const userSchema = new Schema(
     resetPasswordToken: String,
     resetPasswordExpires: Date, 
     telefone: String,
+    usuario: String,
   },
   {
     timestamps: true,

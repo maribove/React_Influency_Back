@@ -16,7 +16,7 @@ const generateToken = (id) => {
 
 // Register user and sign in
 const register = async (req, res) => {
-  const { name, email, password, role, interests } = req.body;
+  const { name, email, password, role, interests, usuario } = req.body;
 
   // check if user exists
   const user = await User.findOne({ email });
@@ -26,6 +26,14 @@ const register = async (req, res) => {
     return;
   }
 
+  const user_usuario = await User.findOne({ usuario });
+
+  if (user_usuario) {
+    res.status(422).json({ errors: ["Nome de usuário já está sendo utilizado. Por favor, utilize outro!"] });
+    return;
+  }
+
+
   // Generate password hash
   const salt = await bcrypt.genSalt();
   const passwordHash = await bcrypt.hash(password, salt);
@@ -33,6 +41,7 @@ const register = async (req, res) => {
   // Create user
   const newUser = await User.create({
     name,
+    usuario,
     email,
     role,
     interests,
@@ -54,6 +63,7 @@ const register = async (req, res) => {
   return res.status(201).json({
     _id: newUser._id,
     name: newUser.name,
+    usuario: newUser.usuario,
     email: newUser.email,
     role: newUser.role,
     interests: newUser.interests,
@@ -163,15 +173,16 @@ const getUserById = async (req, res) => {
   }
 };
 
-// Search for users by name or interests
+// Search usuario
 const SearchUser = async (req, res) => {
   const { q } = req.query;
 
-  // Garante que a busca comece com a sequência fornecida
+  
   const users = await User.find({
     $or: [
       { name: new RegExp(q, "i") },
-      { interests: new RegExp(q, "i") } 
+      { interests: new RegExp(q, "i") },
+      { usuario: new RegExp(q, "i") }
     ]
   }).exec();
 
@@ -253,6 +264,13 @@ const resetPassword = async (req, res) => {
 
     if (!user) {
       return res.status(400).json({ errors: ["Token inválido ou expirado."] });
+    }
+
+
+    // Verificar se a nova senha é igual à senha atual
+    const isSamePassword = await bcrypt.compare(password, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({ errors: ["A nova senha não pode ser igual à senha atual."] });
     }
 
     // Validar a senha
