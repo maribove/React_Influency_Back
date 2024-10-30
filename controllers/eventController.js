@@ -3,14 +3,15 @@ const Event = require("../models/Event");
 // Adicionar novo evento
 const createEvent = async (req, res) => {
   const { title, desc, start, end } = req.body;
-  const userId = req.user._id; 
+  const userId = req.user._id; // Assumindo que o usuário está autenticado
 
   try {
     const newEvent = new Event({ title, desc, start, end, userId });
     await newEvent.save();
     res.status(201).json(newEvent);
   } catch (error) {
-    res.status(500).json({ message: "Erro ao adicionar evento." });
+    console.error("Erro ao adicionar evento:", error);
+    res.status(500).json({ message: "Erro ao adicionar evento.", error: error.message });
   }
 };
 
@@ -61,16 +62,26 @@ const updateEvent = async (req, res) => {
 
 // Deletar evento
 const deleteEvent = async (req, res) => {
+  const { id } = req.params;
+  const reqUser = req.user;
+
   try {
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(id);
+
     if (!event) {
-      return res.status(404).json({ message: "Evento não encontrado." });
+      return res.status(404).json({ errors: ["Evento não encontrado!"] });
     }
 
-    await event.remove();
-    res.status(200).json({ message: "Evento removido com sucesso." });
+    if (event.userId.toString() !== reqUser._id.toString() && reqUser.role !== "admin") {
+      return res.status(403).json({ errors: ["Ação não permitida!"] });
+    }
+
+    await Event.findByIdAndDelete(event._id);
+
+    res.status(200).json({ id: event._id, message: "Evento excluído com sucesso." });
   } catch (error) {
-    res.status(500).json({ message: "Erro ao deletar evento." });
+    console.error("Erro ao deletar evento:", error);
+    res.status(500).json({ errors: ["Erro ao deletar evento."] });
   }
 };
 
