@@ -212,39 +212,39 @@ const LikePost = async (req, res) => {
 
 // comentar em post
 const commentPost = async (req, res) => {
-  const { id } = req.params
-  const { comment } = req.body
+  const { id } = req.params;
+  const { comment } = req.body;
+  const reqUser = req.user;
 
-  const reqUser = req.user
+  try {
+    const post = await Post.findById(id);
 
-  const user = await User.findById(reqUser._id)
-  const post = await Post.findById(id)
+    if (!post) {
+      return res.status(404).json({ errors: ["Publicação não encontrada!"] });
+    }
 
-  if (!post) {
-    res.status(404).json({ errors: ["Publicação não encontrada!"] });
-    return;
+    if (!post.comments) {
+      post.comments = [];
+    }
+
+    const userComment = {
+      comment,
+      userName: reqUser.name,
+      userImage: reqUser.profileImage,
+      userId: reqUser._id,
+    };
+
+    post.comments.push(userComment);
+    await post.save();
+
+    res.status(200).json({
+      comment: userComment,
+      message: "Comentário adicionado!",
+    });
+  } catch (error) {
+    res.status(500).json({ errors: ["Erro ao adicionar comentário."] });
   }
-
-  // colocar comentario no array
-  const userComment = {
-    comment, 
-    userName: user.name,
-    userImage: user.profileImage,
-    userId: user._id,
-  }
-
-  post.comments.push(userComment)
-
-  await post.save()
-
-  res.status(200).json({
-    comment: userComment, 
-    message: "Comentário adicionado!",
-  })
-
-
-}
-
+};
 
 
 

@@ -26,11 +26,21 @@ const postUpdateValidation = () => {
   ];
 }; 
 
-const commentValidation = () =>{
+const commentValidation = () => {
   return [
-    body("comment").isString().withMessage("O comentário é obrigatório")
-  ]
-}
+    body("comment")
+      .not()
+      .equals("undefined")
+      .withMessage("O comentário é obrigatório") // Check for undefined
+      .isString()
+      .withMessage("O comentário deve ser uma string") // Ensure it is a string
+      .isLength({ min: 1 }) // Ensure it is not empty
+      .withMessage("O comentário não pode ser vazio.")
+      .isLength({ max: 500 }) // Optional: Limit the maximum length of comments
+      .withMessage("O comentário não pode ter mais de 500 caracteres."),
+  ];
+};
+
 
 module.exports = {
   postInsertValidation,
