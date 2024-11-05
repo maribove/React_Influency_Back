@@ -3,8 +3,7 @@ const Event = require("../models/Event");
 // Adicionar novo evento
 const createEvent = async (req, res) => {
   const { title, desc, start, end } = req.body;
-  const userId = req.user._id; // Assumindo que o usuário está autenticado
-
+  const userId = req.user._id;
   try {
     const newEvent = new Event({ title, desc, start, end, userId });
     await newEvent.save();
@@ -86,7 +85,7 @@ const deleteEvent = async (req, res) => {
 };
 
 module.exports = {
-  createEvent,
+  createEvent, 
   getAllEvents,
   getEventById,
   updateEvent,

@@ -245,6 +245,11 @@ const commentPost = async (req, res) => {
 
 }
 
+
+
+
+
+
 module.exports = {
   insertPost,
   deletePost,

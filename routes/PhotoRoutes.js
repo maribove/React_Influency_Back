@@ -4,7 +4,7 @@ const router = express.Router()
 // CONTROLLER
 const { insertPhoto, deletePhoto, getAllPhotos,
   getUserPhotos, getPhotoById, updatePhoto, SearchPhoto, 
-  applyToJob, cancelApplication, getApplicants} = require("../controllers/PhotoController")
+  applyToJob, cancelApplication, getApplicants, selectInfluencer} = require("../controllers/PhotoController")
 
 // MIDDLEWARES
 const { photoInsertValidation, photoUpdateValidation } = require("../middlewares/photoValidation")
@@ -36,5 +36,6 @@ router.put("/:id", authGuard, roleGuard(['Empresa']), photoUpdateValidation(), v
 router.post("/:id/apply", authGuard, applyToJob); // Aplicar pra vaga
 router.delete("/:id/cancel", authGuard, cancelApplication); // Cancelar aplicação
 router.get("/:id/applicants", authGuard, getApplicants); // Ver quem aplicou pra vaga (só empresa)
+router.post("/:id/select/:influencerId", authGuard, roleGuard(['Empresa']), selectInfluencer);
 
 module.exports = router;

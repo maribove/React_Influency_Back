@@ -10,7 +10,7 @@ const photoSchema = new Schema(
     date: String,
     valor: Number,
     situacao: String,
-    tags: Array,
+    tags: [String],
     local: String,
     userId: mongoose.ObjectId, 
     userName: String,
@@ -20,13 +20,17 @@ const photoSchema = new Schema(
         appliedAt: { type: Date, default: Date.now },
       },
     ],
-   
+    selectedInfluencer: { 
+      userId: { type: mongoose.ObjectId, ref: "User" }, // Ref para o influenciador selecionado
+      userName: String, // Nome do influenciador selecionado
+      userEmail: String
+    },
   },
   {
     timestamps: true,
   }
 );
 
-Photo = mongoose.model("Photo", photoSchema);
+const Photo = mongoose.model("Photo", photoSchema);
 
 module.exports = Photo;

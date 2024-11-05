@@ -1,13 +1,15 @@
 const Photo = require("../models/Photo");
 const mongoose = require("mongoose");
-const User = require("../models/User"); 
+const User = require("../models/User");
+const nodemailer = require('nodemailer');
+require('dotenv').config(); // Carrega as variáveis de ambiente
 
-// Inserir uma foto
+// Inserir uma vaga
 const insertPhoto = async (req, res) => {
-const { title, local, date, desc, valor, situacao, tags } = req.body;
+  const { title, local, date, desc, valor, situacao, tags } = req.body;
 
-  
-  
+
+
   if (!req.files || !req.files.image || req.files.image.length === 0) {
     return res.status(400).json({ errors: ["A imagem é obrigatória."] });
   }
@@ -41,12 +43,13 @@ const { title, local, date, desc, valor, situacao, tags } = req.body;
       contrato,
       userId: user._id,
       userName: user.name,
+      userEmail: user.email,
     });
 
     res.status(201).json(newPhoto);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ errors: ["Houve um erro ao criar a foto, por favor tente novamente."] });
+    res.status(500).json({ errors: ["Houve um erro ao criar a vaga, por favor tente novamente."] });
   }
 };
 
@@ -118,12 +121,12 @@ const updatePhoto = async (req, res) => {
     const photo = await Photo.findById(id);
 
     if (!photo) {
-      return res.status(404).json({ errors: ["Foto não encontrada!"] });
+      return res.status(404).json({ errors: ["Vaga não encontrada!"] });
     }
 
     if (!photo.userId.equals(reqUser._id)) {
       return res.status(403).json({
-        errors: ["Você não tem permissão para atualizar esta foto."],
+        errors: ["Você não tem permissão para atualizar esta vaga."],
       });
     }
 
@@ -136,10 +139,10 @@ const updatePhoto = async (req, res) => {
 
     await photo.save();
 
-    res.status(200).json({ photo, message: "Foto atualizada com sucesso!" });
+    res.status(200).json({ photo, message: "Vaga atualizada com sucesso!" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ errors: ["Houve um erro ao atualizar a foto, por favor tente novamente."] });
+    res.status(500).json({ errors: ["Houve um erro ao atualizar a vaga, por favor tente novamente."] });
   }
 };
 
@@ -252,6 +255,155 @@ const getApplicants = async (req, res) => {
   }
 };
 
+const sendEmail = async (influencer, photo) => {
+  // Configurar o transporter do nodemailer
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  // Template do email
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f9f9f9; border-radius: 8px; border: 1px solid #ddd;">
+    <h2 style="color: #EF97B4; text-align: center;">Parabéns você foi selecionado! ✨😁🎉</h2>
+    <p>Olá <strong>${influencer.name}</strong>,</p>
+    <p>Você foi selecionado para a vaga: <strong>${photo.title}</strong> da <strong>${photo.userName}</strong>.</p>
+    <p><strong>Local:</strong> ${photo.local}</p>
+    <p><strong>Descrição:</strong></p>
+    <p style="background-color: #fff; padding: 10px; border-left: 4px solid #EF97B4; margin: 10px 0;">${photo.desc}</p>
+    <p>Entre em contato com a empresa para mais detalhes.</p>
+    <p style="font-weight: bold;">Agradecemos seu interesse e desejamos boa sorte! 🩵🍀🩷</p>
+    <p style="font-size: 0.9em; color: #777; text-align: center;">Este é um email automático, por favor não responda.</p>
+</div>
+
+  `;
+
+  const mailOptions = {
+    from: {
+      name: 'Influency',
+      address: process.env.EMAIL_USER
+    },
+    to: influencer.email,
+    subject: "Parabéns, você foi selecionado!",
+    html: htmlContent
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Erro ao enviar email:', error);
+    throw error;
+  }
+};
+
+const selectInfluencer = async (req, res) => {
+  const { id, influencerId } = req.params;
+  const reqUser = req.user;
+
+  try {
+    if (reqUser.role !== "Empresa") {
+      return res.status(403).json({ errors: ["Somente empresas podem selecionar influenciadores."] });
+    }
+
+    const photo = await Photo.findById(id);
+
+    if (!photo) {
+      return res.status(404).json({ errors: ["Vaga não encontrada."] });
+    }
+
+    if (!photo.userId.equals(reqUser._id)) {
+      return res.status(403).json({ errors: ["Você não tem permissão para selecionar influenciadores nesta vaga."] });
+    }
+
+    const influencer = await User.findById(influencerId);
+
+    if (!influencer) {
+      return res.status(404).json({ errors: ["Influenciador não encontrado."] });
+    }
+
+    const isApplied = photo.appliedInfluencers.some(
+      applicant => applicant.userId.toString() === influencerId
+    );
+
+    if (!isApplied) {
+      return res.status(404).json({ errors: ["Influenciador não encontrado na lista de inscritos."] });
+    }
+
+    photo.selectedInfluencer = {
+      userId: influencerId,
+      userName: influencer.name,
+      userEmail: influencer.email,
+    };
+    photo.situacao = "Encerrada";
+    await photo.save();
+
+    try {
+      await sendEmail(influencer, photo);
+      res.status(200).json({ message: "Influenciador selecionado e notificado por e-mail!" });
+    } catch (emailError) {
+      // Ainda salvamos a seleção, mas notificamos o erro no email
+      console.error("Erro ao enviar email:", emailError);
+      res.status(200).json({ 
+        message: "Influenciador selecionado, mas houve um erro ao enviar o email de notificação.",
+        warning: "Email não enviado"
+      });
+    }
+
+  } catch (error) {
+    console.error("Erro ao selecionar influenciador:", error);
+    res.status(500).json({ errors: ["Erro ao selecionar influenciador."] });
+  }
+};
+
+// Função para fazer upload do contrato após a vaga ser postada
+const uploadContract = async (req, res) => {
+  const { id } = req.params;
+  const reqUser = req.user;
+
+  try {
+    // Verifica se um arquivo foi enviado
+    if (!req.files || !req.files.contrato || req.files.contrato.length === 0) {
+      return res.status(400).json({ errors: ["Nenhum contrato foi enviado."] });
+    }
+
+    const photo = await Photo.findById(id);
+
+    // Verifica se a vaga existe
+    if (!photo) {
+      return res.status(404).json({ errors: ["Vaga não encontrada!"] });
+    }
+
+    // Verifica se o usuário tem permissão para adicionar o contrato
+    if (!photo.userId.equals(reqUser._id) && reqUser.role !== "admin") {
+      return res.status(403).json({
+        errors: ["Você não tem permissão para adicionar contrato a esta vaga."],
+      });
+    }
+
+    // Atualiza o nome do arquivo do contrato
+    const contrato = req.files.contrato[0].filename;
+    photo.contrato = contrato;
+
+    await photo.save();
+
+    res.status(200).json({ 
+      message: "Contrato adicionado com sucesso!", 
+      contrato: photo.contrato 
+    });
+
+  } catch (error) {
+    console.error("Erro ao fazer upload do contrato:", error);
+    res.status(500).json({ 
+      errors: ["Houve um erro ao fazer upload do contrato, por favor tente novamente."] 
+    });
+  }
+};
+
+
 module.exports = {
   insertPhoto,
   deletePhoto,
@@ -263,4 +415,6 @@ module.exports = {
   applyToJob,
   cancelApplication,
   getApplicants,
+  sendEmail,
+  selectInfluencer,
 };
